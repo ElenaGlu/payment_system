@@ -1,5 +1,5 @@
 .idea/
-/app/.env
+/.env
 __pycache__
 /venv/
 /app/db/
