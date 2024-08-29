@@ -1,8 +1,6 @@
-from typing import Union
-
 from fastapi import FastAPI, Form, Request
 from starlette import status
-from starlette.responses import JSONResponse, HTMLResponse
+from starlette.responses import HTMLResponse
 
 app = FastAPI()
 
@@ -11,7 +9,7 @@ app = FastAPI()
 async def login(
         request: Request,
         email: str = Form(),
-        password: str = Form()
+        hashed_password: str = Form()
 ) -> HTMLResponse:
     """
     User authorization in the system
