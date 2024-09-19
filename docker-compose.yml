@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    command: bash -c "cd .. && alembic upgrade head && cd app && uvicorn main:app"
     env_file:
       - .env
     depends_on:

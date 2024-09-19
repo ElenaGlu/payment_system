@@ -12,5 +12,3 @@ RUN pip install --upgrade poetry && poetry --version
 RUN poetry install
 
 WORKDIR app/
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
