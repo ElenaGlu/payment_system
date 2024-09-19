@@ -1,34 +1,29 @@
 from sqlalchemy import ForeignKey, Numeric, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from app.database import Base, str_uniq, int_pk
 from decimal import Decimal
+
+from app.database import Base
 
 
 class User(Base):
-    id: Mapped[int_pk]
-    email: Mapped[str_uniq] = mapped_column(String(120))
-    hashed_password: Mapped[str] = mapped_column(String(240))
-    admin: Mapped[bool]
+    __tablename__ = "user_account"
 
-    accounts_owner: Mapped["Account"] = relationship(back_populates="owner")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    full_name: Mapped[str] = mapped_column(String(250))
+    hashed_password: Mapped[str] = mapped_column(String())
+    admin: Mapped[bool] = mapped_column(default=False)
 
-
-class Pay(Base):
-    transaction_id: Mapped[int_pk]
-    account_id: Mapped[int_pk] = mapped_column(ForeignKey("accounts.id"))
-    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
-    signature: Mapped[str]
-
-    accounts_payments: Mapped["Account"] = relationship(back_populates="payments")
+    wallets: Mapped["Wallet"] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
-class Account(Base):
-    id: Mapped[int_pk]
-    user_id: Mapped[int_pk] = mapped_column(ForeignKey("users.id"))
+class Wallet(Base):
+    __tablename__ = "user_wallet"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name_wallet: Mapped[str] = mapped_column(String(50))
     balance: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user_account.id"))
 
-    owner: Mapped[User] = relationship(back_populates="accounts")
-    payments: Mapped[Pay] = relationship(back_populates="accounts")
-
-
+    user: Mapped["User"] = relationship(back_populates="wallets")
 
