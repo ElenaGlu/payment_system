@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+   </head>
+   <body>
+      <form method="post" action="/">
+          {% for dict_item in obj_auth %}
+            {% for key, value in dict_item.items() %}
+      <p>{{key}}: {{value}}</p>
+          {% endfor %}
+          {% endfor %}
+      </form>
+   </body>
+</html>

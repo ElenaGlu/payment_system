@@ -2,18 +2,15 @@ from fastapi import FastAPI, Form, Request
 from starlette import status
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
-from sqlalchemy import select
-from app.database import async_session
-from app.models import User
-from app.utils.access import create_hash, create_token_redis
-from exceptions import AppError, ErrorType
+
+from app.utils.access import Access
 
 # import redis
 #
 # connection_redis = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -28,7 +25,7 @@ async def load_start_page(request: Request) -> HTMLResponse:
 
 
 @app.post("/login", status_code=status.HTTP_200_OK)
-async def login(
+async def user_login(
         request: Request,
         email: str = Form(),
         password: str = Form()
@@ -37,48 +34,31 @@ async def login(
     User authorization in the system
     :return:
     """
-    # data_aff_network = {
-    #     'name': name,
-    #     'postback_url': postback_url,
-    #     'offer_param': offer_param
-    # }
-    # try:
-    #     aff_network_id = (await AffiliateNetwork.create(**data_aff_network)).id
-    #     await add_keitaro_id(
-    #         AffiliateNetwork,
-    #         aff_network_id,
-    #         create_aff_network_keitaro(data_aff_network)
-    #     )
-    #     return templates.TemplateResponse(
-    #         request=request,
-    #         name="offer.html",
-    #         context={'network_id': aff_network_id}
-    #     )
-    # except IntegrityError:
-    #     return HTMLResponse('Пользовательская сеть с таким именем уже существует')
-
-    async with async_session() as session:
-        user_email = (await session.execute(
-            select(User).filter(User.email == email))).scalar()
-        if user_email:
-            password_hash = create_hash(password)
-            if user_email.hashed_password == password_hash:
-                data_token = create_token_redis(user_email.id)
-                # connection_redis.setex(data_token, 2419200, '')
-                return data_token.split(":")[2]
-            else:
-                raise AppError(
-                {
-                    'error_type': ErrorType.ACCESS_ERROR,
-                    'description': 'Invalid email or password'
-                }
-            )
-        else:
-            raise AppError(
-                {
-                    'error_type': ErrorType.REGISTRATION_ERROR,
-                    'description': 'User is not registered.It is necessary to register'
-                }
-            )
+    obj_auth = Access()
+    obj_auth = await (obj_auth.login(email, password))
+    return templates.TemplateResponse(
+        request=request,
+        name="account.html",
+        context=obj_auth
+    )
 
 
+@app.post("/account", status_code=status.HTTP_200_OK)
+async def get_account(request: Request) -> HTMLResponse:
+    """
+    :return:
+    """
+    # user_data = json.loads(request.body)
+    # token_user = user_connection.keys(pattern=f"*:{token_type}:{user_data['token']}")[0]
+    # if token_user:
+    #     profile_id = int(token_user.split(":")[0])
+    #     del user_data['token']
+    #     return func(profile_id, user_data)     обработка токена
+
+    obj_auth = Access()
+    obj_auth = await (obj_auth.account(1))
+    return templates.TemplateResponse(
+        request=request,
+        name="pay.html",
+        context=obj_auth
+    )
